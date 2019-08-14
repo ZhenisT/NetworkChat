@@ -1,4 +1,4 @@
-
+package task1;
 
 public class Task1 {
     private static char ch = 'A';
