@@ -64,9 +64,9 @@ public class Server {
     public void subscribe(ClientHandler clientHandler){
         clients.add(clientHandler);
         broadcastClientList();
-        clientHandler.sendMsg(
-                AuthService.getMessagesFromDBForNick(clientHandler.getNick())
-        );
+//        clientHandler.sendMsg(
+//                AuthService.getMessagesFromDBForNick(clientHandler.getNick())
+//        );
     }
 
     public void unsubscribe(ClientHandler clientHandler){

@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private Server server;
@@ -14,15 +16,18 @@ public class ClientHandler {
     DataOutputStream out;
     DataInputStream in;
     private String nick;
+    private ExecutorService executorService;
 
     public ClientHandler(Server server, Socket socket) {
+
         try {
             this.server = server;
             this.socket = socket;
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
+            executorService = Executors.newCachedThreadPool();
 
-            new Thread(() -> {
+            executorService.submit(() -> {
                 try {
                     // ставим таймаут на сокет.
                     socket.setSoTimeout(100000);
@@ -136,10 +141,11 @@ public class ClientHandler {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    executorService.shutdown();
                     server.unsubscribe(this);
                     System.out.println("Клиент оключился");
                 }
-            }).start();
+            });
 
         } catch (IOException e) {
             e.printStackTrace();

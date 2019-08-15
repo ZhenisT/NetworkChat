@@ -13,9 +13,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 
 
@@ -44,6 +42,7 @@ public class Controller {
     private String nick;
 
     private boolean isAuthorized;
+    private File msgHistory;
 
     Socket socket;
     DataOutputStream out;
@@ -86,15 +85,48 @@ public class Controller {
                                 setAuthorized(true);
                                 // получим ник
                                 nick = str.split(" ")[1];
+
+                                //задаем путь к файлу
+                                msgHistory = new File("src\\client\\history\\" + "history_" + nick + ".txt");
+                                //чтение из файла играниченное числом строк
+                                int liner = 0;
+                            if (msgHistory.exists()){
+                                try (FileReader fr = new FileReader(msgHistory)) {
+                                    LineNumberReader lnr = new LineNumberReader(fr);
+                                    while (lnr.readLine() != null) {
+                                        liner++;
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                try (BufferedReader br = new BufferedReader(new FileReader(msgHistory))) {
+                                    for (int i = 0; i < liner; i++) {
+                                        String line = br.readLine();
+                                        if (i >= liner - 10) {
+                                            textArea.appendText(line + "\n");
+                                        }
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }else {
+                                //создаем файл если его нет
+                                try {
+                                    msgHistory.createNewFile();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                                 break;
                             }
                             if (str.equals("/end")) {
                                 System.out.println("Клиент отключился по бездействию");
                                 throw new RuntimeException("Клиент отключился по бездействию");
                             }
-                            textArea.appendText(str +"\n");
-                        }
 
+                            textArea.appendText(str +"\n");
+
+                        }
 
                         // добавим в заголовок nick пользователя
                         Platform.runLater(() ->{
@@ -120,6 +152,14 @@ public class Controller {
                                     });
                                 }
                             }else {
+
+                //запись в файл
+
+                                try (FileWriter fw = new FileWriter(msgHistory, true)) {
+                                    fw.append(str + "\n");
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                                 textArea.appendText(str +"\n");
                             }
                         }
